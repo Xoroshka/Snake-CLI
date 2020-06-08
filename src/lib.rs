@@ -5,6 +5,8 @@ use rand::{
 };
 
 const CSI: &str = "\x1b[";
+const MINSIZEX: u16 = 10;
+const MINSIZEY: u16 = 10;
 
 pub fn get_key(dev_state: &DeviceState) -> Option<Keycode> {
         let keys: Vec<Keycode> = dev_state.get_keys();
@@ -22,8 +24,21 @@ pub fn get_key(dev_state: &DeviceState) -> Option<Keycode> {
         return None
 }
 
+pub fn get_console_size() -> Option<Pair> {
+  if let Some((terminal_size::Width(x), terminal_size::Height(y)))
+    = terminal_size::terminal_size() {
+    if x > MINSIZEX*2 && y > MINSIZEY{
+      Some(Pair{x: (x/2) as usize, y: (y-1) as usize})
+    } else {
+      None
+    }
+  } else {
+    None
+  }
+}
+
 #[derive(Copy, Clone)]
-struct Pair {
+pub struct Pair {
     x: usize,
     y: usize,
 }
@@ -80,12 +95,12 @@ pub struct Game {
 
 
 impl Game {
-  pub fn new(x: usize, y: usize) -> Game {
+  pub fn new(grid: Pair) -> Game {
     let mut game = Game{
-      snake: vec![Pair{x: x/2, y: y/2}],
+      snake: vec![Pair{x: grid.x/2, y: grid.y/2}],
       dir: rand::random(),
       food: Pair{x: 1, y: 1},
-      grid: Pair{x, y},
+      grid,
       game_over: false,
     };
     game.next_food();

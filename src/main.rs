@@ -1,11 +1,18 @@
 use device_query::{DeviceState, Keycode};
 use std::{thread, time};
 mod lib;
-const ITERMS: u64 = 800;
-const KEYMS: u64 = 75;
+const ITERMS: u64 = 500;
+const KEYMS: u64 = 70;
 
 fn main() {
-  let mut game = lib::Game::new(20, 20);
+  let mut game: lib::Game;
+  match lib::get_console_size() {
+    Some(a) => game = lib::Game::new(a),
+    None => {
+      println!("Console too small");
+      std::process::exit(1);
+    },
+  }
   let dev_state = DeviceState::new();
   let delay = time::Duration::from_millis(KEYMS/2);
   loop {
